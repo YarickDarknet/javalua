@@ -1,59 +1,56 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package javalua;
 
-import javax.microedition.midlet.MIDlet;
-import javax.microedition.midlet.MIDletStateChangeException;
-import javax.microedition.lcdui.*;  
-
-import java.lang.Thread;
-
-import org.luaj.vm2.*;
-import org.luaj.vm2.lib.jme.JmePlatform;
-
-import javax.microedition.io.Connector;
-import javax.microedition.io.file.FileConnection;
-import javax.microedition.io.HttpConnection;
-import javax.microedition.io.HttpsConnection;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import org.luaj.vm2.lib.VarArgFunction;
-import org.luaj.vm2.lib.OneArgFunction;
-import org.luaj.vm2.lib.ZeroArgFunction;
-import org.luaj.vm2.lib.TwoArgFunction;
-import org.luaj.vm2.lib.ThreeArgFunction;
 import java.util.Enumeration;
+import javalua.LCDUIwrapper.LCDUIWrapper;
+import javax.microedition.io.Connector;
+import javax.microedition.io.HttpConnection;
+import javax.microedition.io.HttpsConnection;
+import javax.microedition.io.file.FileConnection;
+import javax.microedition.lcdui.*;
+import javax.microedition.midlet.MIDlet;
+import org.luaj.vm2.*;
+import org.luaj.vm2.lib.OneArgFunction;
+import org.luaj.vm2.lib.VarArgFunction;
+import org.luaj.vm2.lib.ZeroArgFunction;
+import org.luaj.vm2.lib.jme.JmePlatform;
 
-/**
- * @author User
- */
 public class Midlet extends MIDlet implements CommandListener {
 
-    protected Display display;
-    private Form mainForm;
-    private TextField commandTextBox;
+    public Display display;
+    public Form mainForm;
+    public int scriptsize = 0;
     private static String output;
     private TextBox tb;
     private boolean needinput = false;
-    Command submitCommand;
+    private String localpath;
+    private FileChooser fileChooser;
+    public boolean enableTerminal = true;
+    Command terminalCommand;
+    Command fileCommand;
+    Command runCommand;
+    Command back;
     Globals globals = JmePlatform.standardGlobals();
+    
+    LCDUIWrapper wrapper;
         public void startApp() {
             if(display == null){
                 mainForm = new Form("Lua Terminal");
-                commandTextBox = new TextField("Команда","",100,0);
                 tb = new TextBox("Код","",256,0);
-                submitCommand = new Command("Выполнить",Command.OK,0);
+                back = new Command("Назад",Command.BACK,0);
+                runCommand = new Command("Выполнить",Command.OK,0);
+                terminalCommand = new Command("Терминал",Command.OK,0);
+                fileCommand = new Command("Файл",Command.OK,1);
                 output = new String();
                 
-                mainForm.addCommand(submitCommand);
-                //mainForm.append(commandTextBox);
+                mainForm.addCommand(terminalCommand);
+                mainForm.addCommand(fileCommand);
                 mainForm.setCommandListener(this);
                 
-                tb.addCommand(submitCommand);
+                tb.addCommand(runCommand);
+                tb.addCommand(back);
                 tb.setCommandListener(this);
                 
                 display = Display.getDisplay(this);
@@ -62,9 +59,9 @@ public class Midlet extends MIDlet implements CommandListener {
                 globals.set("print", new Print());
                 globals.set("clear", new clear());
                 globals.set("sleep", new sleep());
-                globals.set("require", new require());
                 globals.get("io").set("dirs", new dirs());
-                globals.get("io").set("input", new input());
+                globals.set("require", new require());
+                //globals.get("io").set("input", new input());
                 globals.get("os").set("mkdir", new mkdir());
                 globals.set("http", new LuaTable());
                 globals.get("http").set("get", new get());
@@ -72,7 +69,22 @@ public class Midlet extends MIDlet implements CommandListener {
                 globals.set("https", new LuaTable());
                 globals.get("https").set("get", new sget());
                 globals.get("https").set("post", new spost());
+                wrapper = new LCDUIWrapper(globals, this);
+                globals.set("UI", wrapper.getTable());
+                globals.set("debug", new OneArgFunction() {
+                    public LuaValue call(LuaValue arg) {
+                        display.setCurrent(mainForm);
+                        mainForm.append(">"+(arg.checkjstring())+"\n");
+                        return NIL;
+                    }
+                });
             }
+    }
+        
+    public void startTerminal(){
+        enableTerminal = true;
+        display.setCurrent(mainForm);
+        tb.setString("");
     }
     
     public void pauseApp() {
@@ -91,33 +103,70 @@ public class Midlet extends MIDlet implements CommandListener {
     }
     
     public void commandAction(Command c, Displayable d){
-        if(c.getCommandType() == Command.OK && d == tb){
-            Thread thr = new runner();
-            thr.run();
-            if(needinput == false){
-                display.setCurrent(mainForm);
-                tb.setString("");
-            }
-        }
-        if(d == mainForm){
-            display.setCurrent(tb);
-        }
-    }
-    
-    class runner extends Thread{
-        public void run(){
+        if(d == tb && c == runCommand){
             String script = tb.getString();
             output= "";
             try{
                 globals.load(script).call();
             }catch(LuaError e){
                 output = e.getMessage();
+                display.setCurrent(mainForm);
             }
-            mainForm.append(new StringItem("",">"+tb.getString()+"\n"));
+            mainForm.append(">"+tb.getString()+"\n");
             mainForm.size();
             System.out.println(output);
-            mainForm.append(new StringItem("",output));
-            
+            mainForm.append(output);
+            if(needinput == false){
+                if(enableTerminal){
+                    display.setCurrent(mainForm);
+                }
+                tb.setString("");
+            }
+        }
+        if(d == mainForm && c == terminalCommand){
+            display.setCurrent(tb);
+        }
+        if(d == mainForm && c == fileCommand){
+            FileChooser.FileSelectionHandler handler = new FileChooser.FileSelectionHandler() {
+                public void onFileSelected(String filePath, String directoryPath) {
+                    localpath = directoryPath;
+                    String script = new String();
+                    try{
+                        FileConnection conn = (FileConnection) Connector.open( filePath, Connector.READ );
+                        InputStream str = conn.openInputStream();
+                        StringBuffer buf = new StringBuffer();
+                        int val;
+                        while((val = str.read()) != -1){
+                            buf.append((char)val);
+                        }
+                        script = buf.toString();
+                        conn.close();
+                        str.close();
+                    }catch(IOException e){
+                        display.setCurrent(mainForm);
+                        mainForm.append(">"+(e.getMessage())+"\n");
+                    }catch(IllegalArgumentException e){
+                        display.setCurrent(mainForm);
+                        mainForm.append(">"+(e.getMessage())+"\n");
+                    }
+                    scriptsize = script.length();
+                    try{
+                        globals.load(script).call();
+                    }catch(LuaError e){
+                        mainForm.append("> Error: "+e.getMessage().substring(scriptsize).trim() +"\n");
+                        display.setCurrent(mainForm);
+                    }
+                    if(enableTerminal){
+                        display.setCurrent(mainForm);
+                    }
+                }
+            };
+            fileChooser = new FileChooser(display, handler);
+            fileChooser.show();
+        }
+        if(c == back){
+            tb.setString("");
+            display.setCurrent(mainForm);
         }
     }
     
@@ -131,6 +180,31 @@ public class Midlet extends MIDlet implements CommandListener {
             }
             output+="\n";
             return NONE;
+	}
+    }
+    
+    class require extends OneArgFunction {
+	public LuaValue call(LuaValue v) {
+            String uri = v.checkjstring();
+            String script = new String();
+            try{
+                FileConnection conn = (FileConnection) Connector.open("file:///" +  uri, Connector.READ );
+                if(!conn.exists() && !localpath.equals("")){
+                    conn = (FileConnection) Connector.open(localpath +  uri, Connector.READ );
+                }
+                InputStream str = conn.openInputStream();
+                StringBuffer buf = new StringBuffer();
+                int val;
+                while((val = str.read()) != -1){
+                    buf.append((char)val);
+                }
+                script = buf.toString();
+                conn.close();
+                str.close();
+            }catch(IOException e){
+                error(e.getMessage());
+            }
+            return globals.load(script).call();
 	}
     }
     
@@ -157,28 +231,6 @@ public class Midlet extends MIDlet implements CommandListener {
 	public LuaValue call() {
             mainForm.deleteAll();
             return NONE;
-	}
-    }
-    
-    class require extends OneArgFunction {
-	public LuaValue call(LuaValue v) {
-            String uri = "file:///" + v.checkstring();
-            String script = new String();
-            try{
-                FileConnection conn = (FileConnection) Connector.open( uri, Connector.READ );
-                InputStream str = conn.openInputStream();
-                StringBuffer buf = new StringBuffer();
-                int val;
-                while((val = str.read()) != -1){
-                    buf.append((char)val);
-                }
-                script = buf.toString();
-                conn.close();
-                str.close();
-            }catch(IOException e){
-                error(e.getMessage());
-            }
-            return globals.load(script).call();
 	}
     }
     
