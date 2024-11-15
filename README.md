@@ -54,168 +54,368 @@ end
 ---
 
 # LCDUI  
-All functions are located within the `UI` namespace.
+Все функции находятся внутри пространства `UI`.
 
-## Library Functions  
+## Функции библиотеки
 
-- `enableTerminal()`  
-  Returns a terminal for working with the Lua interpreter.
-
----
-
-- `display(Displayable, Alternative)`  
-  Displays a `Displayable`.  
-  - `Displayable`: The element to display.  
-  - `Alternative`: An optional element displayed after an `Alert` timer expires. Used only if `Displayable` is an `Alert`.
+- `enableTerminal()` - Возвращает терминал для работы с интепретатором Lua
 
 ---
 
-## Alert (inherits from Displayable)  
+- `display(Displayable,Alternative)` - Отображает `Displayable`
+ - `Displayable` - Элемент для отображения
+ - `Alternative` - Опциональный элемент используемый для отображения после истечения таймера Alert, задается только если `Displayable` является `Alert` 
 
-### Methods  
+## Alert, Наследуется от Displayable  
 
-- `new(title, atext, atype)`  
-  Creates a new `Alert` element.  
-  - `title`: The title of the alert.  
-  - `atext`: The alert description.  
-  - `atype`: The alert type (`AlertType`).  
+### Методы  
+- `new(title, atext, atype)` - Создает новый элемент Alert.  
+  - `title` - Название.  
+  - `atext` - Описание.  
+  - `atype` - Тип оповещения (`AlertType`).  
 
-### Constants  
+### Константы  
 
-- `ALARM`: Alert type `AlertType.ALARM`.  
-- `CONFIRMATION`: Alert type `AlertType.CONFIRMATION`.  
-- `ERROR`: Alert type `AlertType.ERROR`.  
-- `INFO`: Alert type `AlertType.INFO`.  
-- `WARNING`: Alert type `AlertType.WARNING`.  
-- `FOREVER`: Special value for `Alert.FOREVER` timeout.  
+- `ALARM` - Тип оповещения `AlertType.ALARM`.  
+- `CONFIRMATION` - Тип оповещения `AlertType.CONFIRMATION`.  
+- `ERROR` - Тип оповещения `AlertType.ERROR`.  
+- `INFO` - Тип оповещения `AlertType.INFO`.  
+- `WARNING` - Тип оповещения `AlertType.WARNING`.  
+- `FOREVER` - Специальное значение для таймаута `Alert.FOREVER`.  
 
-### Element Methods  
-
-- `getTimeout()`: Returns the current timeout for the `Alert`.  
-- `setTimeout(time)`: Sets the timeout for the `Alert`.  
-  - `time`: Timeout in milliseconds.  
-- `setIndicator(indicator)`: Sets an indicator for the `Alert`.  
-  - `indicator`: A `Gauge` element used as the indicator.  
-- `getIndicator()`: Returns the current indicator of the `Alert`.  
-- `setString(text)`: Sets the text for the `Alert`.  
-  - `text`: The text to display.  
-- `getString()`: Returns the current text of the `Alert`.  
-
----
-
-## FileChooser (inherits from Displayable)  
-
-### Methods  
-
-- `new(handler)`  
-  Creates a new `FileChooser` element and registers a file selection handler.  
-  - `handler`: A function called upon file selection. It receives two arguments:  
-    - `filePath`: The selected file path.  
-    - `directoryPath`: The directory containing the selected file.  
+### Методы элемента  
+- `getTimeout()` - Возвращает текущий таймаут для Alert.  
+- `setTimeout(time)` - Устанавливает таймаут для Alert.  
+  - `time` - Время в миллисекундах.  
+- `setIndicator(indicator)` - Устанавливает индикатор для Alert.  
+  - `indicator` - Элемент `Gauge`, который будет использоваться как индикатор.  
+- `getIndicator()` - Возвращает текущий индикатор Alert.  
+- `setString(text)` - Устанавливает текст для Alert.  
+  - `text` - Строка, отображаемая в Alert.  
+- `getString()` - Возвращает текущий текст Alert.
 
 ---
 
-## List (inherits from Displayable)  
+## FileChooser, Наследуется от Displayable
+### Методы
 
-### Methods  
-
-- `new(title, listType)`  
-  Creates a new `List` element.  
-  - `title`: The list title.  
-  - `listType`: The list type (`List.EXCLUSIVE`, `List.IMPLICIT`, `List.MULTIPLE`, `List.POPUP`).  
-
-### Constants  
-
-- `IMPLICIT`: List type `List.IMPLICIT`.  
-- `EXCLUSIVE`: List type `List.EXCLUSIVE`.  
-- `MULTIPLE`: List type `List.MULTIPLE`.  
-- `POPUP`: List type `List.POPUP`.  
-
-### Element Methods  
-
-- `append(string)`: Adds an item to the list.  
-  - `string`: The text of the list item.  
-- `setSelectCommand(command)`: Sets the selection command for the list.  
-  - `command`: A `Command` element.  
-- `delete(index)`: Deletes a list item by index.  
-  - `index`: The index of the item to delete.  
-- `getSelectedIndex()`: Returns the index of the selected item for `EXCLUSIVE` or `IMPLICIT` lists.  
-- `getSelectedFlags()`: Returns a table of boolean values indicating selected items for `MULTIPLE` lists.  
-- `getString(index)`: Returns the text of the list item at the specified index.  
-  - `index`: The index of the item.  
-- `clear()`: Removes all items from the list.  
+- new(handler) - Создает новый элемент FileChooser и регистрирует обработчик выбора файла.
+ - `handler` - Функция, вызываемая при выборе файла. Она принимает два аргумента:
+ - `filePath` - Путь к выбранному файлу.
+ - `directoryPath` - Путь к директории, содержащей выбранный файл.
 
 ---
 
-## Form (inherits from Displayable)  
+## List, Наследуется от Displayable  
 
-### Methods  
+### Методы  
+- `new(title, listType)` - Создает новый элемент List.  
+  - `title` - Название списка.  
+  - `listType` - Тип списка (`List.EXCLUSIVE`, `List.IMPLICIT`, `List.MULTIPLE`, `List.POPUP`).  
 
-- `new(formname)`  
-  Creates a new `Form` element.  
-  - `formname`: The name of the form.  
+### Константы  
 
-### Element Methods  
+- `IMPLICIT` - Тип списка `List.IMPLICIT`.  
+- `EXCLUSIVE` - Тип списка `List.EXCLUSIVE`.  
+- `MULTIPLE` - Тип списка `List.MULTIPLE`.  
+- `POPUP` - Тип списка `List.POPUP`.  
 
-- `append(element)`: Adds an element to the form.  
-  - `element`: Can be a string or an `Item`.  
-- `deleteAll()`: Removes all elements from the form.  
-- `size()`: Returns the number of elements in the form.  
-- `insert(index, element)`: Inserts an element into the form at the specified position.  
-  - `index`: The position index.  
-  - `element`: An `Item`.  
+### Методы элемента  
+- `append(string)` - Добавляет элемент в список.  
+  - `string` - Текст элемента списка.  
+- `setSelectCommand(command)` - Устанавливает команду выбора для списка.  
+  - `command` - Элемент `Command`, используемый как команда выбора.  
+- `delete(index)` - Удаляет элемент списка по индексу.  
+  - `index` - Индекс удаляемого элемента.  
+- `getSelectedIndex()` - Возвращает индекс выбранного элемента для списка типов `EXCLUSIVE` или `IMPLICIT`.  
+- `getSelectedFlags()` - Возвращает таблицу булевых значений, указывающих, какие элементы выбраны, для списка типа `MULTIPLE`.  
+- `getString(index)` - Возвращает текст элемента списка по индексу.  
+  - `index` - Индекс элемента.  
+- `clear()` - Удаляет все элементы из списка.
 
 ---
 
-## TextBox (inherits from Displayable)  
+## Form, Наследуется от Displayable  
 
-### Methods  
+### Методы  
+- `new(formname)` - Создает новый элемент Form.  
+  - `formname` - Название формы.  
 
-- `new(title, text, maxSize, constraints)`  
-  Creates a new `TextBox` element.  
-  - `title`: The title of the text box.  
-  - `text`: Default text (optional, default is an empty string).  
-  - `maxSize`: Maximum text size (optional, default is 1024).  
-  - `constraints`: Text input constraints (optional, default is 0).  
+### Методы элемента  
+- `append(element)` - Добавляет элемент в форму.  
+  - `element` - Может быть строкой или элементом типа `Item`.  
+- `deleteAll()` - Удаляет все элементы из формы.  
+- `size()` - Возвращает количество элементов в форме.  
+- `insert(index, element)` - Вставляет элемент в форму на определенную позицию.  
+  - `index` - Индекс, на который нужно вставить элемент.  
+  - `element` - Элемент типа `Item`. 
 
-### Element Methods  
+---
 
-- `getText()`: Returns the current text from the `TextBox`.  
-- `setText(text)`: Sets the text in the `TextBox`.  
-  - `text`: The text to set.  
+## TextBox, Наследуется от Displayable  
+
+### Методы  
+- `new(title, text, maxSize, constraints)` - Создает новый элемент TextBox.  
+  - `title` - Название текстового поля.  
+  - `text` - Текст по умолчанию (необязательный, по умолчанию пустая строка).  
+  - `maxSize` - Максимальный размер текста (необязательный, по умолчанию 1024).  
+  - `constraints` - Ограничения для ввода текста (необязательный, по умолчанию 0).  
+
+### Методы элемента  
+- `getText()` - Возвращает текущий текст из TextBox.  
+- `setText(text)` - Устанавливает текст в TextBox.  
+  - `text` - Новый текст для установки.
 
 ---
 
 ## Command  
 
-### Methods  
+### Методы  
+- `new(commandName, commandType, commandPriority)` - Создает новый элемент Command.  
+  - `commandName` - Название команды.  
+  - `commandType` - Тип команды (например, `Command.OK`, `Command.CANCEL`).  
+  - `commandPriority` - Приоритет команды.
 
-- `new(commandName, commandType, commandPriority)`  
-  Creates a new `Command` element.  
-  - `commandName`: The name of the command.  
-  - `commandType`: The type of command (e.g., `Command.OK`, `Command.CANCEL`).  
-  - `commandPriority`: The priority of the command.  
+### Константы  
 
-### Constants  
+- `BACK` - Тип команды `Command.BACK`.  
+- `CANCEL` - Тип команды `Command.CANCEL`.  
+- `EXIT` - Тип команды `Command.EXIT`.  
+- `HELP` - Тип команды `Command.HELP`.  
+- `ITEM` - Тип команды `Command.ITEM`.  
+- `OK` - Тип команды `Command.OK`.  
+- `SCREEN` - Тип команды `Command.SCREEN`.  
+- `STOP` - Тип команды `Command.STOP`.  
 
-- `BACK`, `CANCEL`, `EXIT`, `HELP`, `ITEM`, `OK`, `SCREEN`, `STOP`: Command types.  
-
-### Element Methods  
-
-- `getType()`: Returns the command type.  
-- `getLabel()`: Returns the command name.  
-- `equals(command)`: Checks equality of two `Command` elements.  
-  - `command`: Another `Command` for comparison.  
+### Методы элемента  
+- `getType()` - Возвращает тип команды.  
+- `getLabel()` - Возвращает название команды.  
+- `equals(command)` - Проверяет равенство двух команд.  
+  - `command` - Элемент `Command` для сравнения. Возвращает `true`, если команды равны, иначе `false`.     
 
 ---
 
-## Gauge (inherits from Item)  
+## Gauge Наследуется от Item  
 
-### Methods  
+### Методы  
 
 - `new(name, isInteractive, maxValue, defaultValue)`  
-  Creates a new `Gauge` element.  
-  - `name`: The element name.  
-  - `isInteractive`: Boolean indicating if the element is interactive.  
-  - `maxValue`: The maximum value of the gauge.  
-  - `defaultValue`: (Optional) The initial value (default: `0`).  
+  Создает новый элемент `Gauge`.  
+  - `name` - Название элемента.  
+  - `isInteractive` - Булево значение, определяющее, интерактивен ли элемент.  
+  - `maxValue` - Максимальное значение шкалы.  
+  - `defaultValue` - (опционально) Начальное значение шкалы (по умолчанию: `0`).  
+
+### Методы элемента  
+
+- `setValue(value)` - Устанавливает текущее значение шкалы.  
+  - `value` - Новое значение шкалы.  
+- `getValue()` - Возвращает текущее значение шкалы.  
+
+---
+
+## ChoiceGroup Наследуется от Item  
+
+### Методы  
+
+- `new(label, choiceType)`  
+  Создает новый элемент `ChoiceGroup`.  
+  - `label` - Заголовок группы.  
+  - `choiceType` - Тип выбора (например, `Choice.EXCLUSIVE`, `Choice.MULTIPLE`).  
+
+### Константы  
+
+- `IMPLICIT` - Тип списка `ChoiceGroup.IMPLICIT`.  
+- `EXCLUSIVE` - Тип списка `ChoiceGroup.EXCLUSIVE`.  
+- `MULTIPLE` - Тип списка `ChoiceGroup.MULTIPLE`.  
+- `POPUP` - Тип списка `ChoiceGroup.POPUP`.  
+
+### Методы элемента  
+
+- `append(string)` - Добавляет новый элемент в группу.  
+  - `string` - Текст элемента.  
+
+- `delete(index)` - Удаляет элемент по индексу.  
+  - `index` - Индекс удаляемого элемента.  
+
+- `insert(index, string)` - Вставляет элемент на заданную позицию.  
+  - `index` - Индекс позиции для вставки.  
+  - `string` - Текст элемента.  
+
+- `set(index, string)` - Изменяет текст элемента по индексу.  
+  - `index` - Индекс изменяемого элемента.  
+  - `string` - Новый текст.  
+
+- `getSelectedIndex()` - Возвращает индекс выбранного элемента для типов `EXCLUSIVE` и `IMPLICIT`.  
+
+- `setSelectedIndex(index)` - Устанавливает выбранный элемент по индексу.  
+  - `index` - Индекс элемента для выбора.  
+
+- `getSelectedFlags()` - Возвращает массив булевых значений, определяющих выбранность элементов (для типа `MULTIPLE`).  
+
+- `setSelectedFlags(flags)` - Устанавливает выбранность элементов (для типа `MULTIPLE`).  
+  - `flags` - Таблица булевых значений для установки.  
+
+- `getString(index)` - Возвращает текст элемента по индексу.  
+  - `index` - Индекс элемента.  
+
+- `size()` - Возвращает количество элементов в группе. 
+
+---
+
+## TextField Наследуется от Item
+
+### Методы  
+
+- `new(name, text, maxSize, constraints)`  
+  Создает новый элемент `TextField`.  
+  - `name` - Название текстового поля.  
+  - `text` - Текст, отображаемый по умолчанию.  
+  - `maxSize` - Максимальная длина текста.  
+  - `constraints` - (опционально) Ограничения ввода (по умолчанию: `0`).
+
+### Константы  
+
+- `ANY` - Ограничение `TextField.ANY`.  
+- `CONSTRAINT_MASK` - Ограничение `TextField.CONSTRAINT_MASK`.  
+- `EMAILADDR` - Ограничение `TextField.EMAILADDR`.  
+- `NUMERIC` - Ограничение `TextField.NUMERIC`.  
+- `PASSWORD` - Ограничение `TextField.PASSWORD`.  
+- `PHONENUMBER` - Ограничение `TextField.PHONENUMBER`.  
+- `URL` - Ограничение `TextField.URL`.  
+
+### Методы элемента  
+
+- `setText(text)` - Устанавливает текст в поле.  
+  - `text` - Новый текст.  
+
+- `getText()` - Возвращает текущий текст из поля.  
+
+- `setMaxLength(length)` - Устанавливает максимальную длину текста.  
+  - `length` - Максимальная длина.  
+
+- `getMaxLength()` - Возвращает текущую максимальную длину текста.  
+
+- `getCaretPosition()` - Возвращает текущую позицию каретки (курсор).  
+
+- `setInputConstraints(constraints)` - Устанавливает ограничения ввода.  
+  - `constraints` - Новые ограничения.  
+
+- `getInputConstraints()` - Возвращает текущие ограничения ввода.  
+
+---
+
+## StringItem Наследуется от Item
+
+### Методы  
+
+- `new(label, text, constraints)`  
+  Создает новый элемент `StringItem`.  
+  - `label` - Метка для текста.  
+  - `text` - Отображаемый текст.  
+  - `constraints` - (опционально) Режим отображения (по умолчанию: `0`).  
+
+### Методы элемента  
+
+- `getAppearanceMode()` - Возвращает текущий режим отображения элемента.  
+
+- `setText(text)` - Устанавливает текст элемента.  
+  - `text` - Новый текст.  
+
+- `getText()` - Возвращает текущий текст элемента.  
+
+---
+
+## Displayable  
+
+### Добавляемые методы  
+
+- `addCommand(command)`  
+  Добавляет команду к элементу `Displayable`.  
+  - `command` - Объект `Command`.  
+
+- `setCommandHandler(handler)`  
+  Устанавливает обработчик команд для элемента `Displayable`.  
+  - `handler` - Lua-функция для обработки событий команд.
+
+	```
+    	--Пример функции для обработки событий
+		function a(Command, Displayable)
+
+		end
+
+	```
+
+
+- `removeCommand(command)`  
+  Удаляет указанную команду из элемента `Displayable`.  
+  - `command` - Объект `Command`.  
+
+- `getTitle()`  
+  Возвращает заголовок элемента `Displayable`.  
+
+- `equals(otherDisplayable)`  
+  Проверяет, равны ли два элемента `Displayable`.  
+  - `otherDisplayable` - Второй элемент для сравнения.  
+
+---
+
+## Item  
+
+### Добавляемые методы  
+
+- `setDefaultCommand(command)`  
+  Устанавливает команду по умолчанию для элемента `Item`.  
+  - `command` - Объект `Command`.  
+
+- `setCommandListener(listener)`  
+  Устанавливает обработчик команд для элемента `Item`.  
+  - `listener` - Lua-функция для обработки команд.  
+
+	```
+    	--Пример функции для обработки событий
+		function a(Command, Item)
+
+		end
+
+	```
+
+- `getClassName()`  
+  Возвращает имя класса элемента `Item`.  
+
+- `getLayout()`  
+  Возвращает текущую разметку элемента `Item`.  
+
+- `setLayout(layout)`  
+  Устанавливает разметку для элемента `Item`.  
+  - `layout` - Целое число, определяющее разметку.  
+
+- `getLabel()`  
+  Возвращает текущую метку элемента `Item`.  
+
+- `setLabel(label)`  
+  Устанавливает метку для элемента `Item`.  
+  - `label` - Новая метка.  
+
+- `equals(otherItem)`  
+  Проверяет, равны ли два элемента `Item`.  
+  - `otherItem` - Второй элемент для сравнения. 
+
+### Константы
+- `BUTTON` - Тип элемента `Item.BUTTON`.  
+- `HYPERLINK` - Тип элемента `Item.HYPERLINK`.  
+- `LAYOUT_2` - Разметка `Item.LAYOUT_2`.  
+- `LAYOUT_BOTTOM` - Разметка `Item.LAYOUT_BOTTOM`.  
+- `LAYOUT_CENTER` - Разметка `Item.LAYOUT_CENTER`.  
+- `LAYOUT_DEFAULT` - Разметка `Item.LAYOUT_DEFAULT`.  
+- `LAYOUT_EXPAND` - Разметка `Item.LAYOUT_EXPAND`.  
+- `LAYOUT_LEFT` - Разметка `Item.LAYOUT_LEFT`.  
+- `LAYOUT_NEWLINE_AFTER` - Разметка `Item.LAYOUT_NEWLINE_AFTER`.  
+- `LAYOUT_NEWLINE_BEFORE` - Разметка `Item.LAYOUT_NEWLINE_BEFORE`.  
+- `LAYOUT_RIGHT` - Разметка `Item.LAYOUT_RIGHT`.  
+- `LAYOUT_SHRINK` - Разметка `Item.LAYOUT_SHRINK`.  
+- `LAYOUT_TOP` - Разметка `Item.LAYOUT_TOP`.  
+- `LAYOUT_VCENTER` - Разметка `Item.LAYOUT_VCENTER`.  
+- `LAYOUT_VEXPAND` - Разметка `Item.LAYOUT_VEXPAND`.  
+- `LAYOUT_VSHRINK` - Разметка `Item.LAYOUT_VSHRINK`.  
+- `PLAIN` - Тип элемента `Item.PLAIN`.  
