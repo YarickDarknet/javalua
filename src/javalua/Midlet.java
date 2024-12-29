@@ -25,7 +25,7 @@ public class Midlet extends MIDlet implements CommandListener {
     private static String output;
     private TextBox tb;
     private boolean needinput = false;
-    private String localpath;
+    public String localpath;
     private FileChooser fileChooser;
     public boolean enableTerminal = true;
     Command terminalCommand;
@@ -56,12 +56,16 @@ public class Midlet extends MIDlet implements CommandListener {
                 display = Display.getDisplay(this);
                 display.setCurrent(mainForm);
                 
+                globals.set("json",globals.loadfile("json.lua").call());
                 globals.set("print", new Print());
                 globals.set("clear", new clear());
                 globals.set("sleep", new sleep());
                 globals.get("io").set("dirs", new dirs());
                 globals.set("require", new require());
-                //globals.get("io").set("input", new input());
+                globals.set("util",new LuaTable());
+                globals.get("util").set("u16",new LuaTable());
+                globals.get("util").get("u16").set("makeString", new getletter());
+                globals.get("util").get("u16").set("dumpString", new dumph());
                 globals.get("os").set("mkdir", new mkdir());
                 globals.set("http", new LuaTable());
                 globals.get("http").set("get", new get());
@@ -70,14 +74,8 @@ public class Midlet extends MIDlet implements CommandListener {
                 globals.get("https").set("get", new sget());
                 globals.get("https").set("post", new spost());
                 wrapper = new LCDUIWrapper(globals, this);
+                jsonhelper jh = new jsonhelper(this);
                 globals.set("UI", wrapper.getTable());
-                globals.set("debug", new OneArgFunction() {
-                    public LuaValue call(LuaValue arg) {
-                        display.setCurrent(mainForm);
-                        mainForm.append(">"+(arg.checkjstring())+"\n");
-                        return NIL;
-                    }
-                });
             }
     }
         
@@ -171,7 +169,8 @@ public class Midlet extends MIDlet implements CommandListener {
     }
     
     class Print extends VarArgFunction {
-	public Varargs invoke(Varargs args) {
+        
+        public Varargs invoke(Varargs args) {
             LuaValue tostring = globals.get("tostring");
             for ( int i=1, n=args.narg(); i<=n; i++ ) {
 		if ( i>1 ) output+="    ";
@@ -180,7 +179,23 @@ public class Midlet extends MIDlet implements CommandListener {
             }
             output+="\n";
             return NONE;
-	}
+        }
+    }
+    
+    class dumph extends OneArgFunction {
+        
+        public LuaTable todec(String str){
+            LuaTable buf = new LuaTable();
+            for(int i=0;i<str.length();i++){
+                int charValue = str.charAt(i);
+                buf.set(i+1, valueOf(charValue));
+            }
+            return buf;
+        }
+        
+        public LuaValue call(LuaValue arg) {
+            return todec(arg.checkjstring());
+        }
     }
     
     class require extends OneArgFunction {
@@ -234,32 +249,30 @@ public class Midlet extends MIDlet implements CommandListener {
 	}
     }
     
-    class input extends OneArgFunction implements CommandListener {
-        private String str = new String();
-        private TextBox inp;
-        private Command c;
-        private LuaValue func;
-	public LuaValue call(LuaValue v) {
-            func = v.checkfunction();
-            inp = new TextBox("Введите данные","",256,0);
-            c = new Command("Готово",Command.OK,0);
-            inp.addCommand(c);
-            inp.setCommandListener(this);
-            display.setCurrent(inp);
-            needinput = true;
-            
-            return valueOf(str);
-	}
-        
-        public void commandAction(Command c, Displayable d){
-            if(c.getCommandType() == Command.OK){
-                str = inp.getString();
-                func.call(str);
-                display.setCurrent(mainForm);
-                needinput = false;
-            }
+class getletter extends OneArgFunction {
+    public LuaValue call(LuaValue v) {
+        LuaValue tab = v.checktable();  // Ensure the input is a table
+        String result = "";  // Use a plain string for concatenation
+
+        // Iterate through the table's keys
+        LuaValue key = LuaValue.NIL;
+        while (true) {
+            Varargs n = tab.next(key);  // Get the next key-value pair
+            key = n.arg1();
+            LuaValue value = n.arg(2);
+            if (key.isnil()) break;  // Exit loop when no more keys
+
+            int number = value.toint();  // Get the number from the value
+            result += getSymbol(number);  // Append the corresponding symbol to the result
         }
+
+        return LuaValue.valueOf(result);  // Return the resulting string as LuaValue
     }
+
+    public char getSymbol(int number) {
+        return (char) (number);
+    }
+}
     
     class get extends VarArgFunction{
 	public Varargs invoke(Varargs args) {
